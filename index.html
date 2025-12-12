@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>戒飲料大作戰</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --bg-color: #f5f6fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 700px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .level-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Battle Scene */
+        .battle-scene {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .boss-container {
+            margin-bottom: 20px;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .boss-avatar {
+            width: 120px;
+            height: 120px;
+            background-color: #e1e1e1;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            position: relative;
+            transition: transform 0.2s;
+            z-index: 2;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            /* Ensure image stays within circle */
+        }
+
+        .boss-avatar.hit {
+            animation: shake 0.5s;
+            background-color: #ffcccc;
+        }
+
+        .boss-avatar.attack {
+            transform: scale(1.2);
+        }
+
+        .health-bar-container {
+            width: 80%;
+            height: 15px;
+            background-color: #eee;
+            border-radius: 10px;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .health-bar-fill {
+            height: 100%;
+            background-color: var(--danger-color);
+            transition: width 0.5s ease;
+        }
+
+        .player-stats {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #7f8c8d;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        /* Shop */
+        .shop-item {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .shop-info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .shop-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .shop-desc {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 3px;
+        }
+
+        .shop-price {
+            font-weight: bold;
+            color: #f39c12;
+            margin-right: 10px;
+        }
+
+        /* Calendar */
+        .calendar-month {
+            margin-bottom: 20px;
+        }
+
+        .month-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .week-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 5px;
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            background-color: #f8f9fa;
+            color: #bdc3c7;
+            position: relative;
+        }
+
+        .cal-day.success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .cal-day.fail {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .cal-day.today {
+            border: 2px solid var(--primary-color);
+            font-weight: bold;
+            color: var(--primary-color);
+            background: white;
+        }
+
+        .cal-day.empty {
+            background: transparent;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 85%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        /* Effects */
+        .damage-text {
+            position: absolute;
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 2em;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: floatUp 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes floatUp {
+            0% {
+                top: 0;
+                opacity: 1;
+                transform: translateX(-50%) scale(1);
+            }
+
+            100% {
+                top: -50px;
+                opacity: 0;
+                transform: translateX(-50%) scale(1.5);
+            }
+        }
+
+        .screen-shake {
+            animation: shakeScreen 0.5s;
+        }
+
+        @keyframes shakeScreen {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(-5px, 5px);
+            }
+
+            50% {
+                transform: translate(5px, -5px);
+            }
+
+            75% {
+                transform: translate(-5px, 5px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        /* Buff Indicators */
+        .buff-container {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+
+        .buff-icon {
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .buff-atk {
+            background-color: #e67e22;
+        }
+
+        .buff-def {
+            background-color: #9b59b6;
+        }
+
+        .buff-penalty {
+            background-color: #7f8c8d;
+        }
+
+        /* Menu */
+        .menu-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 200;
+        }
+
+        .side-menu {
+            position: absolute;
+            top: 0;
+            right: -250px;
+            /* Hidden */
+            width: 250px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 300;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            color: var(--text-color);
+            text-align: left;
+        }
+
+        .side-menu.open {
+            right: 0;
+        }
+
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .menu-item {
+            padding: 15px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .menu-item.danger {
+            color: var(--danger-color);
+        }
+
+        .menu-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 250;
+        }
+
+        .menu-overlay.open {
+            display: block;
+        }
+
+        /* Profile */
+        .profile-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1em;
+            cursor: pointer;
+            z-index: 200;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+
+        .profile-avatar-small {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .xp-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            background-color: #f1c40f;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <div class="profile-btn" onclick="toggleModal('profile-modal')">
+                <img src="assets/player_avatar.jpg" class="profile-avatar-small"
+                    onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👤</text></svg>'">
+                <span id="header-level">Lv.1</span>
+            </div>
+            <div class="menu-btn" onclick="toggleMenu()">☰</div>
+            <div class="level-badge">LEVEL <span id="level-display">1</span></div>
+            <h2 style="margin: 0;">戒飲料大作戰</h2>
+            <div id="date-display" style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;"></div>
+        </div>
+
+        <div class="content">
+            <!-- BATTLE SCREEN -->
+            <div id="battle-screen">
+                <div class="boss-container">
+                    <div id="damage-overlay"></div>
+                    <div id="boss-avatar" class="boss-avatar">😈</div>
+                    <div style="margin-bottom: 5px; font-weight: bold;">魔王 HP</div>
+                    <div class="health-bar-container">
+                        <div id="boss-hp-bar" class="health-bar-fill" style="width: 100%;"></div>
+                    </div>
+                    <div style="margin-top: 5px;"><span id="boss-hp-text">100</span> / <span
+                            id="boss-max-hp-text">100</span></div>
+
+                    <div class="buff-container" id="buff-container">
+                        <!-- Buffs injected here -->
+                    </div>
+                </div>
+
+                <div id="battle-message"
+                    style="min-height: 40px; margin-bottom: 10px; color: #e67e22; font-weight: bold;"></div>
+
+                <div class="player-stats">
+                    <div class="stat-item" style="width: 100%;">
+                        <div class="stat-label">你的 HP</div>
+                        <div class="health-bar-container" style="width: 100%; height: 15px; margin-top: 5px;">
+                            <div id="player-hp-bar" class="health-bar-fill"
+                                style="width: 100%; background-color: var(--success-color);"></div>
+                        </div>
+                        <div style="margin-top: 2px; font-size: 0.8em;"><span id="player-hp-text">100</span>%</div>
+                    </div>
+                </div>
+
+                <div id="action-area" style="margin-top: 20px;">
+                    <div id="buttons-container">
+                        <button id="btn-action-no-drink" class="btn btn-success" onclick="handleLog(false)">🛡️
+                            沒喝！攻擊魔王</button>
+                        <button id="btn-action-drink" class="btn btn-danger" onclick="showDrinkInput()">🥤 喝了...
+                            (被攻擊)</button>
+                        <button class="btn btn-secondary" onclick="toggleModal('shop-modal')">🛒 商店</button>
+                        <button class="btn btn-warning" onclick="toggleModal('achievements-modal')">🏆 成就</button>
+                        <button class="btn btn-secondary" onclick="toggleModal('calendar-modal')">📅 紀錄</button>
+                    </div>
+
+                    <!-- Next Day Area (Shown after action) -->
+                    <div id="next-day-area" style="display: none; margin-top: 10px;">
+                        <div
+                            style="background-color: #d5f5e3; color: #27ae60; padding: 15px; border-radius: 10px; margin-bottom: 10px; font-weight: bold;">
+                            🎉 今日挑戰已完成！
+                        </div>
+                        <p style="color: #7f8c8d; font-size: 0.9em;">請明天再來繼續累積紀錄吧！</p>
+                        <button class="btn btn-secondary" onclick="toggleModal('shop-modal')">🛒 商店</button>
+                        <button class="btn btn-warning" onclick="toggleModal('achievements-modal')">🏆 成就</button>
+                        <button class="btn btn-secondary" onclick="toggleModal('calendar-modal')">📅 紀錄</button>
+                    </div>
+
+                    <!-- Drink Input Area -->
+                    <div id="drink-input-area" style="display: none; text-align: center;">
+                        <h3>🥤 你喝了多少？</h3>
+                        <input type="number" id="cups-input" value="1" min="1"
+                            style="font-size: 1.5em; width: 60px; text-align: center;"> 杯
+                        <br><br>
+                        <button class="btn btn-danger" onclick="handleLog(true)">確認喝了 (扣血)</button>
+                        <button class="btn btn-secondary" onclick="cancelDrinkInput()">取消</button>
+                    </div>
+
+                    <!-- Penalty Message -->
+                    <div id="penalty-message"
+                        style="display: none; text-align: center; color: #e74c3c; margin-bottom: 10px;">
+                        <h3>🏥 休養中</h3>
+                        <p>還需休息 <span id="penalty-days">0</span> 天</p>
+                    </div>
+
+                    <!-- Fixed Coin Display -->
+                    <div
+                        style="margin-top: 20px; text-align: center; font-weight: bold; color: #f39c12; font-size: 1.2em; border-top: 1px solid #eee; padding-top: 10px;">
+                        持有金幣: 💰 <span id="total-coins">0</span>
+                    </div>
+
+                    <!-- Shop Modal -->
+                    <div id="shop-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal" onclick="toggleModal('shop-modal')">&times;</span>
+                            <h3>商店</h3>
+                            <div id="shop-items"></div>
+                        </div>
+                    </div>
+
+                    <!-- Achievements Modal -->
+                    <div id="achievements-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal" onclick="toggleModal('achievements-modal')">&times;</span>
+                            <h3>成就</h3>
+                            <div id="achievement-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Modal -->
+                    <div id="calendar-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal" onclick="toggleModal('calendar-modal')">&times;</span>
+                            <h3>紀錄日曆</h3>
+                            <div id="calendar-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Modal -->
+                    <div id="profile-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close-modal" onclick="toggleModal('profile-modal')">&times;</span>
+                            <div class="profile-header">
+                                <img src="assets/player_avatar.jpg" class="profile-avatar-large"
+                                    onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👤</text></svg>'">
+                                <h3 style="margin: 5px 0;">玩家資料</h3>
+                                <div style="color: #7f8c8d; font-size: 0.9em;">Lv.<span id="profile-level">1</span> 勇者
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <div
+                                    style="display: flex; justify-content: space-between; font-size: 0.8em; color: #7f8c8d;">
+                                    <span>EXP</span>
+                                    <span><span id="profile-xp">0</span> / <span id="profile-next-xp">100</span></span>
+                                </div>
+                                <div class="xp-bar-container">
+                                    <div id="profile-xp-bar" class="xp-bar-fill" style="width: 0%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="shop-item">
+                                <div class="shop-info">
+                                    <div class="shop-name">⚔️ 基礎攻擊力</div>
+                                    <div class="shop-desc">每級 +2</div>
+                                </div>
+                                <div class="shop-price" style="color: #e74c3c;" id="profile-atk">25</div>
+                            </div>
+
+                            <div class="shop-item">
+                                <div class="shop-info">
+                                    <div class="shop-name">💰 金幣加成</div>
+                                    <div class="shop-desc">每級 +5%</div>
+                                </div>
+                                <div class="shop-price" style="color: #f39c12;" id="profile-coin-bonus">+0%</div>
+                            </div>
+
+                            <div class="shop-item">
+                                <div class="shop-info">
+                                    <div class="shop-name">📅 堅持天數</div>
+                                </div>
+                                <div class="shop-price" style="color: #2ecc71;" id="profile-days">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Menu -->
+            <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+            <div class="side-menu" id="side-menu">
+                <div class="menu-header">
+                    <h3 style="margin:0;">功能表</h3>
+                    <span class="close-menu" style="font-size:1.5em; cursor:pointer;"
+                        onclick="toggleMenu()">&times;</span>
+                </div>
+                <div class="menu-item" onclick="exportSave(); toggleMenu()">📤 備份存檔</div>
+                <div class="menu-item" onclick="importSave(); toggleMenu()">📥 讀取存檔</div>
+                <div class="menu-item danger" onclick="deleteAccount()">🗑️ 刪除此帳號</div>
+            </div>
+        </div>
+
+        <script>
+            function getLocalTodayDate() {
+                const d = new Date();
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            const LEVELS = [
+                { level: 1, name: "微糖史萊姆", hp: 100, atk: 5, def: 0, reward: 100, image: 'assets/boss_level_1.png' },
+                { level: 2, name: "半糖珍珠怪", hp: 300, atk: 10, def: 5, reward: 500, image: 'assets/boss_level_2.png' },
+                { level: 3, name: "全糖奶茶巨人", hp: 800, atk: 20, def: 15, reward: 1000, image: 'assets/boss_level_3.png' },
+                { level: 4, name: "黑糖魔王", hp: 1500, atk: 30, def: 20, reward: 2000, image: 'assets/boss_level_4.png' },
+                { level: 5, name: "糖尿病龍", hp: 3000, atk: 50, def: 30, reward: 5000, image: 'assets/boss_level_5.png' }
+            ];
+
+            const SHOP_ITEMS = [
+                { id: 'atk_boost', name: '狂暴藥水', desc: '攻擊力提升 3 天', price: 200 },
+                { id: 'def_break', name: '破防卷軸', desc: '無視魔王防禦 3 天', price: 100 },
+                { id: 'heal', name: '治療藥水', desc: '回復 30 HP', price: 1000 },
+                { id: 'seven_day_vow', name: '七日誓約', desc: '連續七天不喝飲料，成功能對魔王額外攻擊五次', price: 100 }
+            ];
+
+            let state = JSON.parse(localStorage.getItem('antiDrinkState_v3')) || {
+                currentDate: getLocalTodayDate(),
+                level: 1,
+                playerHp: 100,
+                bossCurrentHp: 100,
+                coins: 0,
+                buffs: {
+                    atkBoostDays: 0,
+                    defBreakDays: 0,
+                    penaltyDays: 0
+                },
+                history: {},
+                streak: 0,
+                achievements: [],
+                activeItems: {
+                    sevenDayVow: null
+                },
+                stats: {
+                    totalItemsBought: 0,
+                    totalDrankCount: 0,
+                    totalCups: 0,
+                    consecutiveDrinkDays: 0,
+                    dailySpend: { date: '', amount: 0 }
+                },
+                playerLevel: 1,
+                playerXp: 0
+            };
+
+            // Migration / Initialization for old saves
+            if (!state.achievements) state.achievements = [];
+            if (!state.activeItems) state.activeItems = { sevenDayVow: null };
+            if (!state.buffs) state.buffs = { atkBoostDays: 0, defBreakDays: 0, penaltyDays: 0 };
+            if (state.streak === undefined) state.streak = 0;
+            if (!state.stats) state.stats = { totalItemsBought: 0, totalDrankCount: 0, totalCups: 0, consecutiveDrinkDays: 0, dailySpend: { date: '', amount: 0 } };
+            if (!state.stats.dailySpend) state.stats.dailySpend = { date: '', amount: 0 };
+            if (!state.playerLevel) state.playerLevel = 1;
+            if (!state.playerXp) state.playerXp = 0;
+
+            function init() {
+                const today = getLocalTodayDate();
+
+                // Check if we need to catch up
+                if (state.currentDate !== today) {
+                    checkMissingDays(today);
+                }
+
+                renderShop();
+                updateUI();
+            }
+
+            function checkMissingDays(today) {
+                // If the stored date is already today, do nothing.
+                if (state.currentDate === today) return;
+
+                // Log logic:
+                // If the current stored date has been completed (has history log),
+                // we should move to the next day.
+                // If it hasn't been completed, we stay on that day to force user input.
+
+                while (state.history[state.currentDate]) {
+                    // Current date is done, find next day
+                    const d = new Date(state.currentDate);
+                    d.setDate(d.getDate() + 1);
+
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const nextDay = `${year}-${month}-${day}`;
+
+                    // Stop if we reached future (shouldn't happen) or today
+                    if (nextDay > today) break;
+
+                    state.currentDate = nextDay;
+                    if (state.currentDate === today) break;
+                }
+
+                saveState();
+            }
+
+            function updateUI() {
+                const currentLevelData = LEVELS[state.level - 1] || LEVELS[LEVELS.length - 1];
+
+                // Stats
+                document.getElementById('level-display').innerText = `${state.level} - ${currentLevelData.name}`;
+                document.getElementById('boss-hp-text').innerText = Math.ceil(state.bossCurrentHp);
+                document.getElementById('boss-max-hp-text').innerText = currentLevelData.hp;
+                document.getElementById('player-hp-text').innerText = state.playerHp;
+                document.getElementById('total-coins').innerText = state.coins;
+                document.getElementById('date-display').innerText = `📅 ${state.currentDate}`;
+
+                // Player Level in Header
+                document.getElementById('header-level').innerText = `Lv.${state.playerLevel}`;
+
+                // Boss Avatar
+                const bossAvatar = document.getElementById('boss-avatar');
+                if (currentLevelData.image) {
+                    bossAvatar.innerHTML = `<img src="${currentLevelData.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                    bossAvatar.style.backgroundColor = 'white';
+                    bossAvatar.style.border = '4px solid white';
+                } else {
+                    bossAvatar.innerHTML = currentLevelData.emoji || '😈';
+                    bossAvatar.style.backgroundColor = '#e1e1e1';
+                    bossAvatar.style.border = '4px solid white';
+                }
+
+                // Bars
+                const bossHpPercent = (state.bossCurrentHp / currentLevelData.hp) * 100;
+                document.getElementById('boss-hp-bar').style.width = `${Math.max(0, bossHpPercent)}%`;
+
+                const playerHpPercent = state.playerHp; // Player HP is already 0-100
+                document.getElementById('player-hp-bar').style.width = `${Math.max(0, playerHpPercent)}%`;
+
+                // Buffs
+                const buffContainer = document.getElementById('buff-container');
+                buffContainer.innerHTML = '';
+                if (state.buffs.atkBoostDays > 0) buffContainer.innerHTML += `<div class="buff-icon buff-atk">⚔️ 狂暴 (${state.buffs.atkBoostDays}天)</div>`;
+                if (state.buffs.defBreakDays > 0) buffContainer.innerHTML += `<div class="buff-icon buff-def">🛡️ 破防 (${state.buffs.defBreakDays}天)</div>`;
+                if (state.buffs.penaltyDays > 0) buffContainer.innerHTML += `<div class="buff-icon buff-penalty">🏥 休養 (${state.buffs.penaltyDays}天)</div>`;
+
+                // Vow Buff
+                if (state.activeItems.sevenDayVow) {
+                    buffContainer.innerHTML += `<div class="buff-icon" style="background:#e74c3c;">🔥 誓約 (${state.activeItems.sevenDayVow.currentDay}/7)</div>`;
+                }
+
+                // Streak Display
+                const streak = state.streak || 0;
+                if (streak > 0) {
+                    buffContainer.innerHTML += `<div class="buff-icon" style="background:#27ae60;">🔥 連續 ${streak} 天</div>`;
+                }
+
+                // Mode Check
+                const todayLog = state.history[state.currentDate];
+                const buttons = document.getElementById('buttons-container');
+                const nextDayArea = document.getElementById('next-day-area');
+                const penaltyMsg = document.getElementById('penalty-message');
+                const msgEl = document.getElementById('battle-message');
+                const drinkInput = document.getElementById('drink-input-area');
+
+                const btnNoDrink = document.getElementById('btn-action-no-drink');
+                const btnDrink = document.getElementById('btn-action-drink');
+
+                const realToday = getLocalTodayDate();
+                const isCatchingUp = state.currentDate !== realToday;
+
+                if (todayLog) {
+                    // Day Complete
+                    buttons.style.display = 'none';
+                    penaltyMsg.style.display = 'none';
+                    drinkInput.style.display = 'none';
+                    nextDayArea.style.display = 'block';
+
+                    if (isCatchingUp) {
+                        // User just finished logging a past day.
+                        // Logic in handleLog or init loop handles moving to next day.
+                        // But for UI immediacy, we can re-check missing days here or wait for page reload.
+                        // Better user exp: Show "Next" button in catch-up mode that triggers check.
+                        // But per request: keep it simple.
+
+                        // We will trigger checkMissingDays immediately to see if we can move to next day
+                        checkMissingDays(realToday);
+
+                        // Use a timeout to refresh UI to show the next day if we moved
+                        if (state.currentDate !== realToday || (state.currentDate === realToday && !state.history[realToday])) {
+                            setTimeout(updateUI, 500);
+                            return;
+                        }
+                    }
+
+                    msgEl.innerText = "今日已完成紀錄！";
+                } else {
+                    // New Day (or Past Missing Day)
+                    nextDayArea.style.display = 'none';
+                    drinkInput.style.display = 'none';
+
+                    if (isCatchingUp) {
+                        msgEl.innerHTML = `<span style="color:red; font-weight:bold;">⚠️ 補登模式</span><br>請補填 <span style="text-decoration: underline;">${state.currentDate}</span> 的紀錄<br><small>(補完才能進行今日挑戰)</small>`;
+                    } else {
+                        msgEl.innerText = "準備戰鬥！";
+                    }
+
+                    if (state.buffs.penaltyDays > 0) {
+                        // Penalty Mode
+                        buttons.style.display = 'block';
+                        penaltyMsg.style.display = 'block';
+                        document.getElementById('penalty-days').innerText = state.buffs.penaltyDays;
+                        msgEl.innerText = "正在休養中...";
+
+                        // Update Button Text for Penalty
+                        btnNoDrink.innerText = "🛌 休息 (恢復體力)";
+                        btnNoDrink.classList.remove('btn-success');
+                        btnNoDrink.classList.add('btn-primary');
+
+                        btnDrink.innerText = "🥤 偷喝... (延長休養)";
+                    } else {
+                        // Normal Mode
+                        buttons.style.display = 'block';
+                        penaltyMsg.style.display = 'none';
+                        msgEl.innerText = "準備戰鬥！";
+
+                        // Reset Button Text
+                        btnNoDrink.innerText = "🛡️ 沒喝！攻擊魔王";
+                        btnNoDrink.classList.add('btn-success');
+                        btnNoDrink.classList.remove('btn-primary');
+
+                        btnDrink.innerText = "🥤 喝了... (被攻擊)";
+                    }
+                }
+            }
+
+            function renderShop() {
+                const container = document.getElementById('shop-items');
+                container.innerHTML = '';
+                SHOP_ITEMS.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'shop-item';
+                    div.innerHTML = `
+                    <div class="shop-info">
+                        <div class="shop-name">${item.name}</div>
+                        <div class="shop-desc">${item.desc}</div>
+                    </div>
+                    <div>
+                        <span class="shop-price">💰 ${item.price}</span>
+                        <button class="btn btn-primary"
+                            style="width: auto; padding: 5px 15px; font-size: 0.8em; margin: 0;"
+                            onclick="buyItem('${item.id}', ${item.price})">購買</button>
+                    </div>
+                `;
+                    container.appendChild(div);
+                });
+            }
+
+            function buyItem(id, price) {
+                if (state.coins < price) { alert("金幣不足！"); return; }
+
+                if (id === 'seven_day_vow') {
+                    if (state.activeItems.sevenDayVow) {
+                        alert("你已經有進行中的七日誓約了！");
+                        return;
+                    }
+                    state.coins -= price;
+                    state.activeItems.sevenDayVow = { currentDay: 0, damageAccumulated: 0 };
+                    alert("已購買七日誓約！從明天開始計算，連續七天不喝飲料即可獲得獎勵！");
+                } else {
+                    state.coins -= price;
+                    let msg = "";
+                    if (id === 'atk_boost') { state.buffs.atkBoostDays += 3; msg = "已購買狂暴藥水！攻擊力提升 3 天！"; }
+                    else if (id === 'def_break') { state.buffs.defBreakDays += 3; msg = "已購買破防卷軸！無視防禦 3 天！"; }
+                    else if (id === 'heal') { state.playerHp = Math.min(100, state.playerHp + 30); msg = "已回復 30 HP！"; }
+                    alert(msg);
+                }
+
+                // Track stats
+                if (!state.stats) state.stats = { totalItemsBought: 0, totalDrankCount: 0, totalCups: 0, consecutiveDrinkDays: 0, dailySpend: { date: '', amount: 0 } };
+                state.stats.totalItemsBought++;
+
+                // Track daily spend
+                if (state.stats.dailySpend.date !== state.currentDate) {
+                    state.stats.dailySpend = { date: state.currentDate, amount: 0 };
+                }
+                state.stats.dailySpend.amount += price;
+
+                checkAchievements(); // Check for shopping achievements
+                saveState();
+                updateUI();
+            }
+
+            function renderCalendar() {
+                const container = document.getElementById('calendar-content');
+                container.innerHTML = '';
+                const dates = Object.keys(state.history).sort();
+                if (dates.length === 0) {
+                    container.innerHTML = "<p style='text-align:center; color:#aaa;'>暫無紀錄</p>";
+                    return;
+                }
+
+                // Group by Month
+                const months = {};
+                dates.forEach(dateStr => {
+                    const [y, m, d] = dateStr.split('-');
+                    const key = `${y}-${m}`;
+                    if (!months[key]) months[key] = [];
+                    months[key].push({ date: dateStr, day: parseInt(d), ...state.history[dateStr] });
+                });
+
+                // Render Months
+                Object.keys(months).sort().reverse().forEach(monthKey => {
+                    const [year, month] = monthKey.split('-');
+                    const monthDiv = document.createElement('div');
+                    monthDiv.className = 'calendar-month';
+
+                    const title = document.createElement('div');
+                    title.className = 'month-title';
+                    title.innerText = `${year}年 ${month}月`;
+                    monthDiv.appendChild(title);
+
+                    const weekHeader = document.createElement('div');
+                    weekHeader.className = 'week-header';
+                    ['日', '一', '二', '三', '四', '五', '六'].forEach(d => {
+                        const s = document.createElement('span');
+                        s.innerText = d;
+                        s.style.textAlign = 'center';
+                        weekHeader.appendChild(s);
+                    });
+                    monthDiv.appendChild(weekHeader);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'month-grid';
+
+                    const firstDate = new Date(`${monthKey}-01`);
+                    const startDay = firstDate.getDay();
+                    for (let i = 0; i < startDay; i++) {
+                        const empty = document.createElement('div');
+                        empty.className = 'cal-day empty';
+                        grid.appendChild(empty);
+                    }
+
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const currentDayStr = `${monthKey}-${String(d).padStart(2, '0')}`;
+                        const record = state.history[currentDayStr];
+                        const cell = document.createElement('div');
+                        cell.className = 'cal-day';
+                        cell.innerText = d;
+                        if (record) {
+                            cell.classList.add(record.drank ? 'fail' : 'success');
+                        }
+                        if (currentDayStr === state.currentDate) cell.classList.add('today');
+                        grid.appendChild(cell);
+                    }
+                    monthDiv.appendChild(grid);
+                    container.appendChild(monthDiv);
+                });
+            }
+
+            function showDamage(amount, isCrit = false) {
+                const dmg = document.createElement('div');
+                dmg.className = 'damage-text';
+                dmg.innerText = `-${amount}`;
+                if (isCrit) {
+                    dmg.style.fontSize = '3em';
+                    dmg.style.color = '#e74c3c';
+                }
+                document.querySelector('.boss-container').appendChild(dmg);
+                setTimeout(() => dmg.remove(), 1000);
+            }
+
+            function showDrinkInput() {
+                document.getElementById('drink-input-area').style.display = 'block';
+                document.getElementById('buttons-container').style.display = 'none';
+            }
+
+            function cancelDrinkInput() {
+                document.getElementById('drink-input-area').style.display = 'none';
+                updateUI();
+            }
+
+            function toggleModal(id) {
+                const el = document.getElementById(id);
+                if (el.style.display === 'block') {
+                    el.style.display = 'none';
+                } else {
+                    el.style.display = 'block';
+                    if (id === 'calendar-modal') renderCalendar();
+                    if (id === 'achievements-modal') renderAchievements();
+                    if (id === 'profile-modal') renderProfile();
+                }
+            }
+
+            function toggleMenu() {
+                const menu = document.getElementById('side-menu');
+                const overlay = document.getElementById('menu-overlay');
+                menu.classList.toggle('open');
+                overlay.classList.toggle('open');
+            }
+
+            function deleteAccount() {
+                if (confirm("⚠️ 警告！\n確定要刪除此帳號嗎？\n所有的紀錄、等級、金幣都將消失且無法復原！")) {
+                    if (confirm("再次確認：真的要刪除嗎？")) {
+                        localStorage.removeItem('antiDrinkState_v3');
+                        alert("帳號已刪除，將重新開始。");
+                        location.reload();
+                    }
+                }
+            }
+
+            function saveState() {
+                localStorage.setItem('antiDrinkState_v3', JSON.stringify(state));
+            }
+
+            function debugNextDay() {
+                const d = new Date(state.currentDate);
+                d.setDate(d.getDate() + 1);
+                state.currentDate = d.toISOString().split('T')[0];
+                saveState();
+                updateUI();
+            }
+
+            function processPenaltyMode(drank, cups) {
+                let message = "";
+                if (!drank) {
+                    state.coins += 10;
+                    message = "🏥 休養中... 身體正在恢復 (獲得10金幣)";
+                } else {
+                    message = `🏥 休養中還喝飲料... 恢復變慢了`;
+                }
+                state.buffs.penaltyDays--;
+                if (state.buffs.penaltyDays <= 0) {
+                    message += " (身體已康復！明天可以戰鬥了！)";
+                    state.playerHp = 50; // Recover to half
+                }
+                return message;
+            }
+
+            function processBattleMode(drank, cups, currentLevelData) {
+                let message = "";
+                let xpGain = 0;
+
+                if (!drank) {
+                    // Streak Logic
+                    state.streak = (state.streak || 0) + 1;
+                    let streakBonusMsg = "";
+
+                    // XP Gain
+                    xpGain = 50; // Reduced from 100
+
+                    // 3-Day Heal Bonus & XP Bonus
+                    if (state.streak % 3 === 0) {
+                        state.playerHp = Math.min(100, state.playerHp + 10);
+                        xpGain += 150; // Bonus XP (Reduced from 300)
+                        streakBonusMsg = ` (連續${state.streak}天! HP+10, XP+150)`;
+                    }
+
+                    // Base Damage Calculation (Level Scaling)
+                    // Base ATK = 25 + (Level - 1) * 2
+                    let baseAtk = 25 + (state.playerLevel - 1) * 2;
+                    let damage = baseAtk;
+
+                    // Apply Buffs
+                    let isCrit = false;
+                    if (state.buffs.atkBoostDays > 0) {
+                        const boostPercent = Math.floor(Math.random() * 81) + 20; // 20-100
+                        damage = Math.floor(damage * (1 + boostPercent / 100));
+                        isCrit = true;
+                    }
+
+                    // Apply Defense
+                    let def = currentLevelData.def;
+                    if (state.buffs.defBreakDays > 0) def = 0;
+
+                    let finalDamage = Math.max(5, damage - def);
+
+                    // Seven Day Vow Logic
+                    let vowMsg = "";
+                    if (state.activeItems.sevenDayVow) {
+                        state.activeItems.sevenDayVow.currentDay++;
+                        vowMsg = ` [誓約進行中: ${state.activeItems.sevenDayVow.currentDay}/7]`;
+
+                        if (state.activeItems.sevenDayVow.currentDay >= 7) {
+                            const extraDamage = finalDamage * 5;
+                            finalDamage += extraDamage;
+                            vowMsg = ` 💥 七日誓約達成！額外發動 5 次攻擊！(追加 ${extraDamage} 傷害)`;
+                            state.activeItems.sevenDayVow = null; // Reset
+                            showDamage(finalDamage, true);
+                        }
+                    }
+
+                    state.bossCurrentHp = Math.max(0, state.bossCurrentHp - finalDamage);
+
+                    // Coin Calculation (Level Scaling)
+                    // Bonus = (Level - 1) * 5%
+                    let coinBonus = 1 + (state.playerLevel - 1) * 0.05;
+                    let coinsEarned = Math.floor(finalDamage * coinBonus);
+                    state.coins += coinsEarned;
+
+                    // Reset consecutive drink days on success
+                    if (state.stats) state.stats.consecutiveDrinkDays = 0;
+
+                    message = `⚔️ 造成 ${finalDamage} 傷害！` + (isCrit ? " (爆擊!)" : "") + streakBonusMsg + vowMsg + ` +${coinsEarned}金幣` + ` +${xpGain}XP`;
+
+                    if (!vowMsg.includes("爆發")) showDamage(finalDamage);
+
+                    document.getElementById('boss-avatar').classList.add('hit');
+                    setTimeout(() => document.getElementById('boss-avatar').classList.remove('hit'), 500);
+
+                    if (state.bossCurrentHp <= 0) levelUp(currentLevelData);
+
+                    checkAchievements();
+
+                } else {
+                    // Reset Streak
+                    if (state.streak > 0) {
+                        message = `😢 連續 ${state.streak} 天紀錄中斷... `;
+                        state.streak = 0;
+                    }
+
+                    xpGain = 0; // No XP for drinking
+
+                    // Track stats
+                    if (!state.stats) state.stats = { totalItemsBought: 0, totalDrankCount: 0, totalCups: 0, consecutiveDrinkDays: 0, dailySpend: { date: '', amount: 0 } };
+                    state.stats.totalDrankCount++;
+                    state.stats.totalCups = (state.stats.totalCups || 0) + cups;
+                    state.stats.consecutiveDrinkDays = (state.stats.consecutiveDrinkDays || 0) + 1;
+
+                    // Break Vow
+                    if (state.activeItems.sevenDayVow) {
+                        message += " (七日誓約失效)";
+                        state.activeItems.sevenDayVow = null;
+                    }
+
+                    const damage = currentLevelData.atk * cups;
+                    const heal = 20 * cups;
+
+                    state.playerHp = Math.max(0, state.playerHp - damage);
+                    state.bossCurrentHp = Math.min(currentLevelData.hp, state.bossCurrentHp + heal);
+
+                    message += `🩸 受到 ${damage} 傷害... 魔王回血 ${heal}` + ` +${xpGain}XP`;
+                    document.body.classList.add('screen-shake');
+                    setTimeout(() => document.body.classList.remove('screen-shake'), 500);
+
+                    if (state.playerHp <= 0) {
+                        message += " 💀 你昏倒了！進入休養模式 (3天)";
+                        state.buffs.penaltyDays = 3;
+                    }
+                }
+
+                // Process XP
+                addXp(xpGain);
+
+                return message;
+            }
+
+            function addXp(amount) {
+                state.playerXp += amount;
+                let nextLevelXp = state.playerLevel * 200; // Slower leveling
+
+                // Check for level up
+                // While loop in case multiple levels gained at once
+                while (state.playerXp >= nextLevelXp) {
+                    state.playerXp -= nextLevelXp;
+                    state.playerLevel++;
+                    nextLevelXp = state.playerLevel * 200; // Slower leveling
+                    alert(`🎉 恭喜升級！\n你現在是 Lv.${state.playerLevel} 勇者！\n攻擊力提升！金幣獲取量提升！`);
+                }
+            }
+
+            function renderProfile() {
+                document.getElementById('profile-level').innerText = state.playerLevel;
+                document.getElementById('profile-xp').innerText = state.playerXp;
+
+                const nextLevelXp = state.playerLevel * 200; // Slower leveling
+                document.getElementById('profile-next-xp').innerText = nextLevelXp;
+
+                const percent = (state.playerXp / nextLevelXp) * 100;
+                document.getElementById('profile-xp-bar').style.width = `${percent}%`;
+
+                // Stats
+                const baseAtk = 25 + (state.playerLevel - 1) * 2;
+                document.getElementById('profile-atk').innerText = baseAtk;
+
+                const coinBonus = Math.round((state.playerLevel - 1) * 5);
+                document.getElementById('profile-coin-bonus').innerText = `+${coinBonus}%`;
+
+                // Days
+                const days = Object.keys(state.history).filter(d => !state.history[d].drank).length;
+                document.getElementById('profile-days').innerText = `${days} 天`;
+            }
+
+            function handleLog(drank) {
+                try {
+                    const currentLevelData = LEVELS[state.level - 1] || LEVELS[LEVELS.length - 1];
+                    const msgEl = document.getElementById('battle-message');
+                    let message = "";
+                    let cups = parseInt(document.getElementById('cups-input').value) || 1;
+
+                    if (state.buffs.penaltyDays > 0) {
+                        message = processPenaltyMode(drank, cups);
+                    } else {
+                        message = processBattleMode(drank, cups, currentLevelData);
+                    }
+
+                    // Decrease Buff Days (if active)
+                    if (state.buffs.atkBoostDays > 0) state.buffs.atkBoostDays--;
+                    if (state.buffs.defBreakDays > 0) state.buffs.defBreakDays--;
+
+                    // Save
+                    state.history[state.currentDate] = { drank, cups };
+                    saveState();
+
+                    cancelDrinkInput();
+                    updateUI();
+                    msgEl.innerText = message;
+                } catch (e) {
+                    console.error(e);
+                    alert("發生錯誤，請截圖回報開發者：\n" + e.message);
+                }
+            }
+
+            function levelUp(levelData) {
+                if (state.level < LEVELS.length) {
+                    state.level++;
+                    state.coins += levelData.reward;
+                    const nextLevel = LEVELS[state.level - 1];
+                    state.bossCurrentHp = nextLevel.hp;
+                    setTimeout(() =>
+                        alert(`🎉 恭喜擊敗 ${levelData.name}！\n獲得獎勵 ${levelData.reward} 金幣！\n\n下一關：${nextLevel.name} (HP: ${nextLevel.hp})`), 200);
+                } else {
+                    alert("🏆 恭喜通關！你是戒飲料大師！");
+                }
+            }
+
+            function exportSave() {
+                const data = btoa(encodeURIComponent(JSON.stringify(state)));
+                navigator.clipboard.writeText(data).then(() => {
+                    alert("存檔代碼已複製到剪貼簿！\n請將代碼貼到記事本或傳送給自己保存。");
+                }).catch(() => {
+                    prompt("請手動複製以下存檔代碼：", data);
+                });
+            }
+
+            function importSave() {
+                const data = prompt("請貼上存檔代碼：");
+                if (!data) return;
+                try {
+                    const json = decodeURIComponent(atob(data));
+                    const newState = JSON.parse(json);
+                    // Basic validation for imported state
+                    if (newState && newState.level !== undefined && newState.playerHp !== undefined) {
+                        // Merge new properties if old save format is loaded
+                        state = {
+                            ...state, // Keep default new properties if not present in old save
+                            ...newState,
+                            buffs: { ...state.buffs, ...(newState.buffs || {}) },
+                            activeItems: { ...state.activeItems, ...(newState.activeItems || {}) }
+                        };
+                        saveState();
+                        alert("讀取成功！網頁將重新整理。");
+                        location.reload();
+                    } else {
+                        alert("存檔格式錯誤！");
+                    }
+                } catch (e) {
+                    alert("讀取失敗，代碼可能損毀。");
+                    console.error(e);
+                }
+            }
+
+            function deleteAccount() {
+                if (confirm('確定要刪除帳號嗎？所有進度將會消失且無法復原！')) {
+                    // Method 1: Clear memory state
+                    state = {
+                        currentDate: getLocalTodayDate(),
+                        level: 1,
+                        playerHp: 100,
+                        bossCurrentHp: 100,
+                        coins: 0,
+                        buffs: { atkBoostDays: 0, defBreakDays: 0, penaltyDays: 0 },
+                        history: {},
+                        streak: 0,
+                        achievements: [],
+                        activeItems: { sevenDayVow: null },
+                        stats: { totalItemsBought: 0, totalDrankCount: 0, totalCups: 0, consecutiveDrinkDays: 0, dailySpend: { date: '', amount: 0 } },
+                        playerLevel: 1,
+                        playerXp: 0
+                    };
+
+                    // Method 2: Overwrite localStorage with clean state first
+                    // This fixes an issue in some browsers where removeItem doesn't sync fast enough before reload
+                    saveState();
+
+                    // Method 3: Remove it explicitly
+                    localStorage.removeItem('antiDrinkState_v3');
+
+                    alert('帳號已刪除，將重新開始。');
+                    location.reload();
+                }
+            }
+
+            function checkAchievements() {
+                const streak = state.streak || 0;
+                const newUnlocks = [];
+
+                // Ensure stats exist
+                if (!state.stats) state.stats = { totalItemsBought: 0, totalDrankCount: 0, totalCups: 0, consecutiveDrinkDays: 0, dailySpend: { date: '', amount: 0 } };
+
+                const goals = [
+                    { id: 'willpower_3', days: 3, name: '忍住不喝！', reward: 50, type: 'streak' },
+                    { id: 'willpower_7', days: 7, name: '一週的奇蹟', reward: 150, type: 'streak' },
+                    { id: 'willpower_30', days: 30, name: '心如止水', reward: 500, type: 'streak' },
+                    { id: 'shopaholic', count: 10, name: '購物狂', reward: 200, type: 'shopping', current: state.stats.totalItemsBought },
+                    { id: 'honest_challenger', count: 10, name: '誠實挑戰者', reward: 100, type: 'drinking', current: state.stats.totalDrankCount },
+                    { id: 'slipped', count: 2, name: '手滑了嗎？', reward: 50, type: 'consecutive_drink', current: state.stats.consecutiveDrinkDays },
+                    { id: 'millionaire', count: 5000, name: '大富翁', reward: 1000, type: 'coins', current: state.coins },
+                    { id: 'bucket_waist', count: 50, name: '水桶腰', reward: 100, type: 'cups', current: state.stats.totalCups },
+                    { id: 'spendthrift', count: 1000, name: '揮金如土', reward: 300, type: 'daily_spend', current: (state.stats.dailySpend.date === state.currentDate ? state.stats.dailySpend.amount : 0) }
+                ];
+
+                goals.forEach(g => {
+                    let unlocked = false;
+                    if (g.type === 'streak' && streak >= g.days) unlocked = true;
+                    if (g.type === 'shopping' && g.current >= g.count) unlocked = true;
+                    if (g.type === 'drinking' && g.current >= g.count) unlocked = true;
+                    if (g.type === 'consecutive_drink' && g.current >= g.count) unlocked = true;
+                    if (g.type === 'coins' && g.current >= g.count) unlocked = true;
+                    if (g.type === 'cups' && g.current >= g.count) unlocked = true;
+                    if (g.type === 'daily_spend' && g.current >= g.count) unlocked = true;
+
+                    if (unlocked && !state.achievements.includes(g.id)) {
+                        state.achievements.push(g.id);
+                        state.coins += g.reward;
+                        newUnlocks.push(`${g.name}\n獲得 ${g.reward} 金幣`);
+                    }
+                });
+
+                if (newUnlocks.length > 0) {
+                    alert("🏆 解鎖成就！\n\n" + newUnlocks.join("\n\n"));
+                }
+            }
+
+            function renderAchievements() {
+                const list = document.getElementById('achievement-list');
+                list.innerHTML = '';
+
+                const allAchievements = [
+                    { id: 'willpower_3', name: '忍住不喝！', desc: '連續 3 天沒喝飲料' },
+                    { id: 'willpower_7', name: '一週的奇蹟', desc: '連續 7 天沒喝飲料' },
+                    { id: 'willpower_30', name: '心如止水', desc: '連續 30 天沒喝飲料' },
+                    { id: 'shopaholic', name: '購物狂', desc: '在商店購買超過 10 次道具' },
+                    { id: 'honest_challenger', name: '誠實挑戰者', desc: '記錄過 10 次喝飲料 (至少誠實)' },
+                    { id: 'slipped', name: '手滑了嗎？', desc: '連續兩天都記錄「喝了飲料」' },
+                    { id: 'millionaire', name: '大富翁', desc: '累積持有超過 5000 金幣' },
+                    { id: 'bucket_waist', name: '水桶腰', desc: '累積喝了 50 杯飲料' },
+                    { id: 'spendthrift', name: '揮金如土', desc: '一天內花掉 1000 金幣' }
+                ];
+
+                allAchievements.forEach(ach => {
+                    const unlocked = state.achievements.includes(ach.id);
+                    const div = document.createElement('div');
+                    div.style.cssText = `
+                        padding: 10px; margin-bottom: 8px; border-radius: 8px;
+                        border: 1px solid ${unlocked ? '#f1c40f' : '#eee'};
+                        background: ${unlocked ? '#fff9db' : '#f9f9f9'};
+                        color: ${unlocked ? '#333' : '#aaa'};
+                        display: flex; align-items: center; gap: 10px;
+                    `;
+                    div.innerHTML = `
+                        <div style="font-size: 1.5em;">${unlocked ? '🏆' : '🔒'}</div>
+                        <div>
+                            <div style="font-weight: bold;">${ach.name}</div>
+                            <div style="font-size: 0.8em;">${ach.desc}</div>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+
+            init();
+        </script>
+</body>
+
+</html>

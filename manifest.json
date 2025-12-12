@@ -1,0 +1,15 @@
+{
+  "name": "戒飲料大作戰",
+  "short_name": "戒飲料",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#4a90e2",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

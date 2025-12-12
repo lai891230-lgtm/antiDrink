@@ -270,6 +270,12 @@
             position: relative;
         }
 
+        .cal-day.today {
+            border: 2px solid var(--primary-color);
+            font-weight: bold;
+            /* color: var(--primary-color); Remove this to let success/fail text color work */
+        }
+
         .cal-day.success {
             background-color: var(--success-color);
             color: white;
@@ -278,13 +284,6 @@
         .cal-day.fail {
             background-color: var(--danger-color);
             color: white;
-        }
-
-        .cal-day.today {
-            border: 2px solid var(--primary-color);
-            font-weight: bold;
-            color: var(--primary-color);
-            background: white;
         }
 
         .cal-day.empty {
